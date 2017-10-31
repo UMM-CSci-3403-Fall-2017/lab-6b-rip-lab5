@@ -1,12 +1,25 @@
 package xrate;
 
+import java.net.URL;
+
+import javax.sql.rowset.spi.XmlReader;
+import javax.xml.stream.XMLInputFactory;
+
+import org.omg.CORBA.portable.InputStream;
+import org.w3c.dom.NodeList;
+
+import com.sun.xml.internal.txw2.Document;
+
 /**
  * Provide access to basic currency exchange rate services.
  * 
- * @author PUT YOUR TEAM NAME HERE
+ * @author lab-6b-rip-lab5
+ * Xaitheng Yang
+ * Marshall Hoffmann
  */
 public class ExchangeRateReader {
 
+	String URLbase = null;
     /**
      * Construct an exchange rate reader using the given base URL. All requests
      * will then be relative to that URL. If, for example, your source is Xavier
@@ -19,7 +32,7 @@ public class ExchangeRateReader {
      *            the base URL for requests
      */
     public ExchangeRateReader(String baseURL) {
-        // TODO Your code here
+        URLbase = baseURL;
     }
 
     /**
@@ -40,7 +53,32 @@ public class ExchangeRateReader {
      * @throws SAXException
      */
     public float getExchangeRate(String currencyCode, int year, int month, int day) {
-        // TODO Your code here
+    	URL url = new URL(URLbase+"/"+year+"/"+month+"/"+day+".xml");
+    	InputStream xmlStream=url.openStream();
+    	
+    	XMLInputFactor factory = XMLInputFactory.newInstance();
+    	XMLStreamReader reader = factory.createXMLStreamReader(xmlStream);
+        
+        Document doc = createDocument("yayy");
+        
+        String send;
+        while((send = reader.read()) != null)
+        {
+        	doc.write(send);
+        }
+    	
+    	NodeList nodeList = doc.getElementsByTagName("fx");
+    	NodeList children;
+    	
+    	for (int i = 0; i < nodeList.getLength(); i++)
+    	{
+    		children = nodeList.item(i).getChildNodes(); 
+    		if(currencyCode.equals(children.item(0).getNodeValue()))
+    		{
+    			return children.item(1).getNodeValue();
+    		}
+    	}
+        
         throw new UnsupportedOperationException();
     }
 
@@ -64,7 +102,8 @@ public class ExchangeRateReader {
     public float getExchangeRate(
             String fromCurrency, String toCurrency,
             int year, int month, int day) {
-        // TODO Your code here
+        
+    	
         throw new UnsupportedOperationException();
     }
 }
