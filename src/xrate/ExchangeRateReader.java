@@ -64,7 +64,9 @@ public class ExchangeRateReader {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    public float getExchangeRate(String currencyCode, int year, int month, int day) throws IOException, ParserConfigurationException, SAXException {
+    public float getExchangeRate(String currencyCode, int year, int month, int day) 
+    		throws IOException, ParserConfigurationException, SAXException {
+    	//initial value set to -1 for ease of error recognition
     	float ret = -1;
     	
     	//formatting the URL properly
@@ -81,23 +83,25 @@ public class ExchangeRateReader {
     		
     	URL url = new URL(URLbase+Syear+"/"+Smonth+"/"+Sday+".xml");
     	
+    	//Prepare inputStream and document
     	InputStream inputStream=url.openStream();
     	
     	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     	DocumentBuilder db = dbf.newDocumentBuilder();
-    	
-    	Document doc;
-    	
-    	doc = db.parse(new InputSource(inputStream));
-    	
+    	Document doc = db.parse(new InputSource(inputStream));
     	doc.getDocumentElement().normalize();
 
+    	//Get complete NodeList of all currencies
     	NodeList nodeList = doc.getElementsByTagName("fx");
     	
+    	//prepare for individual node examinations
     	Node fxnode;
     	Element fxresult = null;
     	NodeList fxCurCode;
     	NodeList fxrate;
+    	
+    	//examine each node individually for currency code match
+    	//if a match is found, return the appropriate currency conversion rate
     	for (int i = 0; i < nodeList.getLength(); i++)
     	{
     		fxnode = nodeList.item(i);
@@ -136,6 +140,7 @@ public class ExchangeRateReader {
      */
     public float getExchangeRate(String fromCurrency, String toCurrency, int year, int month, int day) 
     		throws IOException, ParserConfigurationException, SAXException {
+    	//initial values set to -1 for ease of error recognition
     	float ret = -1;
     	float rate1 = -1;
     	float rate2 = -1;
@@ -154,23 +159,25 @@ public class ExchangeRateReader {
     		
     	URL url = new URL(URLbase+Syear+"/"+Smonth+"/"+Sday+".xml");
     	
+    	//Prepare inputStream and document
     	InputStream inputStream=url.openStream();
     	
     	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     	DocumentBuilder db = dbf.newDocumentBuilder();
-    	
-    	Document doc;
-    	
-    	doc = db.parse(new InputSource(inputStream));
-    	
+    	Document doc = db.parse(new InputSource(inputStream));
     	doc.getDocumentElement().normalize();
 
+    	//Get complete NodeList of all currencies
     	NodeList nodeList = doc.getElementsByTagName("fx");
     	
+    	//prepare for individual node examinations
     	Node fxnode;
     	Element fxresult = null;
     	NodeList fxCurCode;
     	NodeList fxrate;
+    	
+    	//examine each node individually for currency code match
+    	//if a match is found, save the value to the appropriate rate variable
     	for (int i = 0; i < nodeList.getLength(); i++)
     	{
     		fxnode = nodeList.item(i);
@@ -191,6 +198,7 @@ public class ExchangeRateReader {
     		}
     	}
     	
+    	//final calculation
     	ret = rate1/rate2;
     	return ret;
     }
