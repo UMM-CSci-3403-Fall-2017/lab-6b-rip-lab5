@@ -17,6 +17,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 //import com.sun.xml.internal.txw2.Document;
 
@@ -89,22 +91,26 @@ public class ExchangeRateReader {
     	doc = db.parse(new InputSource(inputStream));
     	
     	doc.getDocumentElement().normalize();
-    	
-//    	NodeList nodeList = doc.getElementsByTagName("fx basecurrency=\"EUR\"");
+
     	NodeList nodeList = doc.getElementsByTagName("fx");
-    	System.out.println(nodeList.item(0));
-    	System.out.println(nodeList.item(1));
     	
-    	NodeList children;
+    	Node fxnode;
+    	Element fxresult = null;
+    	NodeList fxCurCode;
+    	NodeList fxrate;
     	for (int i = 0; i < nodeList.getLength(); i++)
     	{
-    		children = nodeList.item(i).getChildNodes();
-    		System.out.println("---");
-    		System.out.println(children.item(0).getNodeValue());
-    		System.out.println(children.item(1).getNodeValue());
-    		if(currencyCode.equals(children.item(0).getNodeValue()))
+    		fxnode = nodeList.item(i);
+    		if(fxnode.getNodeType() == fxnode.ELEMENT_NODE){
+    			fxresult = (Element) fxnode;
+    		}
+    		
+    		fxCurCode = fxresult.getElementsByTagName("currency_code");
+    		fxrate = fxresult.getElementsByTagName("rate");
+    		
+    		if(currencyCode.equals(fxCurCode.item(0).getTextContent()))
     		{
-    			ret = new Float(children.item(1).getNodeValue());
+    			ret = new Float(fxrate.item(0).getTextContent());
     			return ret;
     		}
     	}
@@ -128,11 +134,56 @@ public class ExchangeRateReader {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    public float getExchangeRate(
-            String fromCurrency, String toCurrency,
-            int year, int month, int day) {
-        
+    public float getExchangeRate(String fromCurrency, String toCurrency, int year, int month, int day) {
+    	float ret = -1;
     	
-        throw new UnsupportedOperationException();
+    	//formatting the URL properly
+    	String Syear = Integer.toString(year);
+    	String Smonth = Integer.toString(month);
+    	String Sday = Integer.toString(day);
+    	if(month < 10){
+    		Smonth = "0" + Integer.toString(month);
+    	}
+    	
+    	if(day < 10){
+    		Sday = "0" + Integer.toString(day);
+    	}	
+    		
+    	URL url = new URL(URLbase+Syear+"/"+Smonth+"/"+Sday+".xml");
+    	
+    	InputStream inputStream=url.openStream();
+    	
+    	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    	DocumentBuilder db = dbf.newDocumentBuilder();
+    	
+    	Document doc;
+    	
+    	doc = db.parse(new InputSource(inputStream));
+    	
+    	doc.getDocumentElement().normalize();
+
+    	NodeList nodeList = doc.getElementsByTagName("fx");
+    	
+    	Node fxnode;
+    	Element fxresult = null;
+    	NodeList fxCurCode;
+    	NodeList fxrate;
+    	for (int i = 0; i < nodeList.getLength(); i++)
+    	{
+    		fxnode = nodeList.item(i);
+    		if(fxnode.getNodeType() == fxnode.ELEMENT_NODE){
+    			fxresult = (Element) fxnode;
+    		}
+    		
+    		fxCurCode = fxresult.getElementsByTagName("currency_code");
+    		fxrate = fxresult.getElementsByTagName("rate");
+    		
+    		if(currencyCode.equals(fxCurCode.item(0).getTextContent()))
+    		{
+    			ret = new Float(fxrate.item(0).getTextContent());
+    			return ret;
+    		}
+    	}
+    	return ret;
     }
 }
