@@ -1,14 +1,15 @@
 package xrate;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.*;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 
 public class ExchangeRateTest {
     private static final String NICS_DUMMY_DATA_URL = "http://www.morris.umn.edu/~mcphee/ExchangeRateData/";

@@ -1,14 +1,24 @@
 package xrate;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.sql.rowset.spi.XmlReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
-import org.omg.CORBA.portable.InputStream;
+import java.io.IOException;
+//import org.omg.CORBA.portable.InputStream;
+import java.io.InputStream;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
 
-import com.sun.xml.internal.txw2.Document;
+//import com.sun.xml.internal.txw2.Document;
 
 /**
  * Provide access to basic currency exchange rate services.
@@ -52,34 +62,53 @@ public class ExchangeRateReader {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    public float getExchangeRate(String currencyCode, int year, int month, int day) {
-    	URL url = new URL(URLbase+"/"+year+"/"+month+"/"+day+".xml");
-    	InputStream xmlStream=url.openStream();
+    public float getExchangeRate(String currencyCode, int year, int month, int day) throws IOException, ParserConfigurationException, SAXException {
+    	float ret = -1;
     	
-    	XMLInputFactor factory = XMLInputFactory.newInstance();
-    	XMLStreamReader reader = factory.createXMLStreamReader(xmlStream);
-        
-        Document doc = createDocument("yayy");
-        
-        String send;
-        while((send = reader.read()) != null)
-        {
-        	doc.write(send);
-        }
+    	//formatting the URL properly
+    	String Syear = Integer.toString(year);
+    	String Smonth = Integer.toString(month);
+    	String Sday = Integer.toString(day);
+    	if(month < 10){
+    		Smonth = "0" + Integer.toString(month);
+    	}
     	
+    	if(day < 10){
+    		Sday = "0" + Integer.toString(day);
+    	}	
+    		
+    	URL url = new URL(URLbase+Syear+"/"+Smonth+"/"+Sday+".xml");
+    	
+    	InputStream inputStream=url.openStream();
+    	
+    	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    	DocumentBuilder db = dbf.newDocumentBuilder();
+    	
+    	Document doc;
+    	
+    	doc = db.parse(new InputSource(inputStream));
+    	
+    	doc.getDocumentElement().normalize();
+    	
+//    	NodeList nodeList = doc.getElementsByTagName("fx basecurrency=\"EUR\"");
     	NodeList nodeList = doc.getElementsByTagName("fx");
-    	NodeList children;
+    	System.out.println(nodeList.item(0));
+    	System.out.println(nodeList.item(1));
     	
+    	NodeList children;
     	for (int i = 0; i < nodeList.getLength(); i++)
     	{
-    		children = nodeList.item(i).getChildNodes(); 
+    		children = nodeList.item(i).getChildNodes();
+    		System.out.println("---");
+    		System.out.println(children.item(0).getNodeValue());
+    		System.out.println(children.item(1).getNodeValue());
     		if(currencyCode.equals(children.item(0).getNodeValue()))
     		{
-    			return children.item(1).getNodeValue();
+    			ret = new Float(children.item(1).getNodeValue());
+    			return ret;
     		}
     	}
-        
-        throw new UnsupportedOperationException();
+    	return ret;
     }
 
     /**
