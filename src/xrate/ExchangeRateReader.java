@@ -134,8 +134,11 @@ public class ExchangeRateReader {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    public float getExchangeRate(String fromCurrency, String toCurrency, int year, int month, int day) {
+    public float getExchangeRate(String fromCurrency, String toCurrency, int year, int month, int day) 
+    		throws IOException, ParserConfigurationException, SAXException {
     	float ret = -1;
+    	float rate1 = -1;
+    	float rate2 = -1;
     	
     	//formatting the URL properly
     	String Syear = Integer.toString(year);
@@ -178,12 +181,17 @@ public class ExchangeRateReader {
     		fxCurCode = fxresult.getElementsByTagName("currency_code");
     		fxrate = fxresult.getElementsByTagName("rate");
     		
-    		if(currencyCode.equals(fxCurCode.item(0).getTextContent()))
+    		if(fromCurrency.equals(fxCurCode.item(0).getTextContent()))
     		{
-    			ret = new Float(fxrate.item(0).getTextContent());
-    			return ret;
+    			rate1 = new Float(fxrate.item(0).getTextContent());
+    		}
+    		if(toCurrency.equals(fxCurCode.item(0).getTextContent()))
+    		{
+    			rate2 = new Float(fxrate.item(0).getTextContent());
     		}
     	}
+    	
+    	ret = rate1/rate2;
     	return ret;
     }
 }
